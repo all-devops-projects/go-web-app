@@ -4,7 +4,8 @@ metadata:
   name: go-web-svc
 spec:
   selector:
-    app: myapp
+    app: go-web-app
   ports:
   - port: 80
     targetPort: 8080
+  type: NodePort
