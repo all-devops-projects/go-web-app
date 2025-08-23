@@ -1,0 +1,84 @@
+go-web-app documentation
+
+1)Run the app locally
+
+2) Containerize the app
+	Write a Dockerfile - Use a distroless image for lower image size and higher security.
+	While building the image name it as <docker-username>/<image-name>:<image-tag> (It will be easier to push this).
+	To push the image to the docker registry use - docker push <docker-username>/<image-name>:<image-tag>
+
+3) Write k8s manifests
+	Create 3 manifest for deployment, service and ingress
+
+	Note: Make sure add the correct values in the manifests files, like correct container name in the svc file, correct ports are mapped.
+
+4) Create a K8s cluster.
+	Using Azure CLI
+
+	To create a resource group, use
+	az group create --name <resource-group-name> --location <region>
+		
+		(How does Azure know which resource it is creating from the above command?
+			It knows that based on what we write after az. In this case it is group.
+			For VMs, it will be vm.
+			For AKS cluster, it will be aks.
+		)
+		
+	To create an AKS cluster, use
+	az aks create \
+	  --resource-group go-web-app-resource-group \
+	  --name go-web-aks \
+	  --node-count 2 \
+	  --node-vm-size Standard_D2as_v5 \
+	  --enable-addons monitoring \
+	  --generate-ssh-keys \
+	  --location westus2
+	  --enable-node-public-ip
+	  
+	  When running in windows terminal, bring the command to a single line.
+	  
+	  By default, node-count is 3, vm-size is Standard_DS2_v2 and AKS creation will fail, as Azure doesn't provide this for westus2.
+	  
+	  If --enable-addons monitoring  --> This enables monitoring by deploying a agent (containerized DaemonSet) on every node.
+	  It collects,
+		Container metrics (CPU, memory, disk, network per pod).
+		Node metrics (CPU/mem utilization, node status).
+		Logs (stdout/stderr from containers, kube-system logs).
+	  Sends all this to Log Analytics (no Prometheus/Grafana setup needed).
+
+	  --generate-ssh-keys  --> This generates new ssh keys in the .ssh folder if it doesn't find any existing keys there.
+	  The cmd will fail if you don't have existing keys and you don't use this.
+	  
+	  --enable-node-public-ip
+	  This enable IP addresses for the nodes in the node pool of the cluster. You can now use the NodePort service to expose your application.
+	  
+	  ---------------------
+	  
+	  Next, authentic kubectl with the AKS using the below cmd
+	  az aks get-credentials --resource-group <resource-group-name> --name <cluster-name> --overwrite-existing
+	  
+5) Deploy the Kubernetes resources using the manifest files.
+	The ingress will not have the external IP address because there is no ingress controller.
+
+6) Create an ingress controller.
+	When deploy an ingress and create an ingress controller, it creates a NLB (Network Load Balancer). You can then use the DN (Domain Name) provided in the ingress file to access the application.
+	As I don't have a DN, locally mapped the DN to the load balancer's IP. In windows, go to this path, C:\Windows\System32\drivers\etc and edit the hosts file to add this,
+	4.155.156.58    go-web-app.local
+
+	Use the below cmd to create an ingress controller. Use the community ingres controller and not the one provided by F5 (F5 owns nginx)
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.13.1/deploy/static/provider/cloud/deploy.yaml
+
+	Once you create this, an address should be assigned to the ingress.
+
+	If it is not, check the events of the 'ingress-nginx-controller' service by using the below command.
+	kubectl describe svc ingress-nginx-controller -n ingress-nginx
+
+	Note: The issue I faced was in the free subscription and the total PublicIP addresses created reached its limit. So I re-created the cluster by not creating the publicIP of the nodes of the nodepool.
+	
+
+
+
+
+
+
+az aks create --resource-group go-web-app-resource-group --name go-web-aks --node-count 2 --node-vm-size Standard_D2as_v5 --generate-ssh-keys --location westus2
