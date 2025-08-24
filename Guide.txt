@@ -35,6 +35,9 @@ go-web-app documentation
 	  --location westus2
 	  --enable-node-public-ip
 	  
+	  (Final command used to create the AKS cluster,
+	  az aks create --resource-group go-web-app-resource-group --name go-web-aks --node-count 2 --node-vm-size Standard_D2as_v5 --generate-ssh-keys --location westus2)
+	  
 	  When running in windows terminal, bring the command to a single line.
 	  
 	  By default, node-count is 3, vm-size is Standard_DS2_v2 and AKS creation will fail, as Azure doesn't provide this for westus2.
@@ -75,10 +78,13 @@ go-web-app documentation
 
 	Note: The issue I faced was in the free subscription and the total PublicIP addresses created reached its limit. So I re-created the cluster by not creating the publicIP of the nodes of the nodepool.
 	
-
-
-
-
-
-
-az aks create --resource-group go-web-app-resource-group --name go-web-aks --node-count 2 --node-vm-size Standard_D2as_v5 --generate-ssh-keys --location westus2
+7) Create Helm chart for the deployment.
+	Install helm
+	helm create <chat-name-of-your-choice>
+	Update the values file with the values you want to be dynamic in the manifest files.
+	Update the manifests file in the templates folder with the Jinja2 syntax for the values which are defined in the values.yaml file.
+	To install the helm chart,
+		helm install <give-a-chart-name> <path-of-the-helm-chart>
+	To uninstall the helm chart,
+		helm uninstall <chart-name-which-you-gave-in-the-previous-command>
+		
