@@ -87,4 +87,20 @@ go-web-app documentation
 		helm install <give-a-chart-name> <path-of-the-helm-chart>
 	To uninstall the helm chart,
 		helm uninstall <chart-name-which-you-gave-in-the-previous-command>
-		
+
+	(Note: If teh workflow runs, after that you need to pull the changes in your local as the CI workflow updates the values in the values.yaml in Github.)
+
+8) CD using ArgoCD.
+	Install ArgoCD using the below commands
+		kubectl create namespace argocd
+		kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+	You can change the service type for ArgoCD either to LoadBalancer or NodePort. I chose LoadBalancer and an external IP was assigned to the ArgoCD service.
+	Use the below command to edit the svc
+		kubectl edit svc argocd-server -n argocd
+
+	Once edited, use the External IP of the service to get ArgoCD's UI.
+
+	You 'admin' as username and for password, decode (using base64) the secret in the argocd-initial-admin-secret using the command
+		kubectl edit secret argocd-initial-admin-secret -n argocd
+	
