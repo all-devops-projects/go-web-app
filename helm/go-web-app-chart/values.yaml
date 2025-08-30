@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   repository: go-web-app
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "17341951832"
+  tag: "17341987235"
 
 
 
