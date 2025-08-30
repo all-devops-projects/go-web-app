@@ -1,6 +1,14 @@
 replicaCount: 1
 
 image:
-  repository: nginx
-  pullPolicy: IfNotPresent
-  tag: "v1"
+  repository: go-web-app
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "17191979773"
+
+
+
+
+
+
+
+
